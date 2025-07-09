@@ -1,1 +1,1 @@
-# Script 1 placeholder
+# Script content will be added manually

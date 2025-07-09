@@ -1,5 +1,1 @@
-fastapi
-gunicorn
-jinja2
-python-multipart
-uvicorn
+# Placeholder for requirements.txt
