@@ -1,73 +1,67 @@
-<<<<<<< HEAD
-# Placeholder for app.py
-=======
-# main.py
-from fastapi import FastAPI, Request, UploadFile, Form
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi import FastAPI, Request, Form, UploadFile, File, Depends
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-import shutil, os, subprocess, time
+import os
+import shutil
+import time
+from scripts import check_missing_anime_mal, sorted_plan_to_watch_mal, anime_franchise_tree
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
-SCRIPT_MAP = {
-    "check_missing": "scripts/check_missing_anime_mal.py",
-    "sort_plan": "scripts/sorted_plan_to_watch_mal.py",
-    "franchise_tree": "scripts/anime_franchise_tree.py"
-}
+UPLOAD_DIR = "uploads"
+OUTPUT_DIR = "outputs"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+
+def save_upload_file(upload_file: UploadFile, destination: str):
+    with open(destination, "wb") as buffer:
+        shutil.copyfileobj(upload_file.file, buffer)
+
 
 @app.get("/", response_class=HTMLResponse)
-async def home(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+def home(request: Request):
+    return templates.TemplateResponse("home.html", {"request": request})
 
-@app.post("/run_tool", response_class=HTMLResponse)
-async def run_tool(request: Request, 
-                   file: UploadFile, 
-                   tool: str = Form(...),
-                   output_type: str = Form("html")):
 
-    # Save file as animelist.xml
-    file_path = "animelist.xml"
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+@app.post("/run_script", response_class=HTMLResponse)
+async def run_script(
+    request: Request,
+    script: str = Form(...),
+    malusername: str = Form(""),
+    output_types: list[str] = Form(...),
+    xmlfile: UploadFile = File(None)
+):
+    timestamp = time.strftime("%Y%m%d-%H%M%S")
+    input_path = os.path.join(UPLOAD_DIR, "animelist.xml")
 
-    # Select script
-    script_path = SCRIPT_MAP.get(tool)
-    if not script_path or not os.path.exists(script_path):
-        return templates.TemplateResponse("index.html", {
-            "request": request,
-            "error": "Script not found or not available."
-        })
+    if xmlfile:
+        save_upload_file(xmlfile, input_path)
+    elif malusername:
+        # Future enhancement: Fetch XML from MAL user
+        return templates.TemplateResponse("home.html", {"request": request, "error": "Username fetching not implemented yet."})
+    else:
+        return templates.TemplateResponse("home.html", {"request": request, "error": "Please upload a file or enter a username."})
 
-    # Remove old outputs
-    for ext in ["html", "txt"]:
-        output_file = f"output.{ext}"
-        if os.path.exists(output_file):
-            os.remove(output_file)
+    html_path = os.path.join(OUTPUT_DIR, f"output_{timestamp}.html")
+    txt_path = os.path.join(OUTPUT_DIR, f"output_{timestamp}.txt")
 
-    # Run script
-    try:
-        result = subprocess.run(["python", script_path], capture_output=True, text=True, timeout=600)
-    except Exception as e:
-        return templates.TemplateResponse("index.html", {
-            "request": request,
-            "error": f"Script execution failed: {str(e)}"
-        })
+    # Run selected script
+    if script == "Check Missing Anime":
+        check_missing_anime_mal.run(xml_path=input_path, html_output=html_path)
+    elif script == "Sort Plan To Watch":
+        sorted_plan_to_watch_mal.run(xml_path=input_path, html_output=html_path, txt_output=txt_path)
+    elif script == "Anime Franchise Tree":
+        anime_franchise_tree.run(xml_path=input_path, html_output=html_path)
+    else:
+        return templates.TemplateResponse("home.html", {"request": request, "error": "Unknown script selected."})
 
-    # Return result
-    html_path = "output.html"
-    txt_path = "output.txt"
-    output_files = []
-    if output_type in ["html", "both"] and os.path.exists(html_path):
-        output_files.append(("HTML", html_path))
-    if output_type in ["txt", "both"] and os.path.exists(txt_path):
-        output_files.append(("Text", txt_path))
-
-    return templates.TemplateResponse("upload_success.html", {
+    return templates.TemplateResponse("results.html", {
         "request": request,
-        "files": output_files,
-        "tool_name": tool.replace("_", " ").title()
+        "html_result": f"/{html_path}",
+        "txt_result": f"/{txt_path}" if os.path.exists(txt_path) else None,
+        "generated_at": timestamp
     })
->>>>>>> 1b98142e54bb9f37437e4795742a63c97a5ef4fc
