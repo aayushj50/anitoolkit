@@ -1,4 +1,4 @@
-fastapi
+flask
 gunicorn
 jinja2
 python-multipart
