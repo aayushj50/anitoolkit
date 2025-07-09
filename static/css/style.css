@@ -1,1 +1,53 @@
-body { background: #111; color: white; }
+body {
+  background-color: #121212;
+  color: white;
+  font-family: 'Segoe UI', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  max-width: 800px;
+  margin: auto;
+  padding: 2rem;
+}
+
+input[type="file"] {
+  background: #333;
+  color: #fff;
+  padding: 1rem;
+  border: 1px dashed #555;
+  border-radius: 8px;
+  display: block;
+  margin-bottom: 1rem;
+  width: 100%;
+}
+
+button {
+  background-color: #1e88e5;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #1565c0;
+}
+
+.script-selector {
+  margin-top: 1.5rem;
+}
+
+.theme-toggle {
+  float: right;
+  margin-top: -40px;
+  margin-right: 10px;
+}
+
+.logo {
+  width: 150px;
+  margin: 10px auto;
+  display: block;
+}
