@@ -1,1 +1,39 @@
-<html><body><h1>AniToolkit Main Page</h1></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AniToolkit</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <script src="/static/js/script.js" defer></script>
+</head>
+<body>
+  <div class="theme-toggle">
+    <button onclick="toggleTheme()">🌓 Toggle Theme</button>
+  </div>
+
+  <div class="container">
+    <!-- Logo image temporarily removed -->
+    <!-- <img src="/static/images/logo.png" alt="AniToolkit Logo" class="logo" /> -->
+
+    <h1>🎌 AniToolkit</h1>
+    <p>Anime List Helper for MyAnimeList users</p>
+
+    <form action="/upload" method="post" enctype="multipart/form-data">
+      <label for="file">Upload your MAL XML File:</label>
+      <input type="file" name="file" accept=".xml" required />
+
+      <div class="script-selector">
+        <label for="script">Select a tool:</label>
+        <select name="script" required>
+          <option value="check_missing">Check Missing Related Anime</option>
+          <option value="plan_to_watch">Sorted Plan to Watch + Franchise</option>
+          <option value="franchise_tree">Franchise Explorer (Single Entry)</option>
+        </select>
+      </div>
+
+      <button type="submit">Run Tool</button>
+    </form>
+  </div>
+</body>
+</html>
